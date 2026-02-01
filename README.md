@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/logo.png" alt="HoneyBan Logo" width="250" />
+  <img src="./logo.png" alt="HoneyBan Logo" width="250" />
   <h1>HoneyBan</h1>
   <p><strong>High-Performance Kernel-Space Traffic Control & DDoS Mitigation</strong></p>
   
