@@ -1,3 +1,16 @@
+<div align="center">
+  <img src="assets/logo.png" alt="HoneyBan Logo" width="250" />
+  <h1>HoneyBan</h1>
+  <p><strong>High-Performance Kernel-Space Traffic Control & DDoS Mitigation</strong></p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/language-C-00599C?style=flat-square" alt="Language">
+    <img src="https://img.shields.io/badge/tech-eBPF%20%2F%20XDP-orange?style=flat-square" alt="Technology">
+    <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License">
+    <img src="https://img.shields.io/badge/platform-Linux%20Kernel%205.4%2B-lightgrey?style=flat-square" alt="Platform">
+  </p>
+</div>
+
 # HoneyBan: High-Performance eBPF Packet Filter
 
 HoneyBan is a kernel-space DDoS mitigation and traffic control system built on Linux eBPF (Extended Berkeley Packet Filter) and XDP (eXpress Data Path).
