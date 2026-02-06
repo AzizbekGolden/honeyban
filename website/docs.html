@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HoneyBan documentation - eBPF/XDP firewall. Installation, configuration, comparison.">
+  <title>Documentation - HoneyBan</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo"><img src="assets/logo.png" alt="HoneyBan"></a>
+      <nav class="nav">
+        <a href="why.html">Why HoneyBan</a>
+        <a href="docs.html" class="active">Documentation</a>
+        <a href="index.html#about">About</a>
+        <a href="https://github.com/AzizbekGolden/honeyban" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="docs">
+    <div class="container">
+      <nav class="docs-nav">
+        <h3>Contents</h3>
+        <ul>
+          <li><a href="#introduction">Introduction</a></li>
+          <li><a href="#requirements">Requirements</a></li>
+          <li><a href="#installation">Installation</a></li>
+          <li><a href="#configuration">Configuration</a></li>
+          <li><a href="#ebpf-xdp">eBPF & XDP</a></li>
+          <li><a href="#comparison">Comparison</a></li>
+        </ul>
+      </nav>
+
+      <div class="docs-content">
+        <h1>Documentation</h1>
+
+        <h2 id="introduction">Introduction</h2>
+        <p>HoneyBan is an open source firewall that blocks bad traffic at the kernel level using eBPF and XDP. It is an alternative to fail2ban and UFW, with significantly higher throughput and lower CPU usage.</p>
+        <ul>
+          <li>eBPF + XDP: packet filtering in the kernel</li>
+          <li>~10× faster than traditional userspace tools</li>
+          <li>No kernel modules to compile; uses built-in eBPF support</li>
+        </ul>
+
+        <h2 id="requirements">Requirements</h2>
+        <ul>
+          <li>Linux kernel 5.4+ (eBPF/XDP support)</li>
+          <li>Root or CAP_NET_ADMIN for loading eBPF programs</li>
+          <li>Supported NIC driver for XDP (native or generic)</li>
+        </ul>
+
+        <h2 id="installation">Installation</h2>
+        <p>Clone the repository and build (or use pre-built binaries when available):</p>
+        <pre><code>git clone https://github.com/AzizbekGolden/honeyban.git
+cd honeyban
+make
+sudo make install</code></pre>
+        <p>Or with your package manager once packages are published.</p>
+
+        <h2 id="configuration">Configuration</h2>
+        <p>Configuration is typically in <code>/etc/honeyban/config.yaml</code> (or similar). Example:</p>
+        <pre><code># Block list: IPs or CIDRs to drop
+block:
+  - 192.0.2.0/24
+  - 203.0.113.42
+
+# Interface for XDP
+interface: eth0
+
+# Log level: debug, info, warn, error
+log_level: info</code></pre>
+        <p>Start the daemon:</p>
+        <pre><code>sudo honeyban --config /etc/honeyban/config.yaml</code></pre>
+        <p>Exact options and paths depend on the released HoneyBan daemon. See the GitHub repo for up-to-date instructions.</p>
+
+        <h2 id="ebpf-xdp">eBPF & XDP</h2>
+        <p><strong>XDP (eXpress Data Path)</strong> runs a program as soon as a packet is received by the NIC driver, before it enters the kernel network stack. You can drop, pass, or redirect packets with minimal overhead.</p>
+        <p><strong>eBPF</strong> is the in-kernel VM that runs these programs. The kernel verifies eBPF bytecode for safety, so you don't load arbitrary kernel modules.</p>
+        <p>HoneyBan uses eBPF programs attached at the XDP hook to match source IPs against a block list and drop matching packets before they consume more CPU.</p>
+
+        <h2 id="comparison">Comparison with fail2ban / UFW</h2>
+        <table style="width:100%; border-collapse: collapse; margin: 1rem 0;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--color-border); text-align: left;">
+              <th style="padding: 0.5rem 0;">Aspect</th>
+              <th style="padding: 0.5rem 0;">HoneyBan</th>
+              <th style="padding: 0.5rem 0;">fail2ban / UFW</th>
+            </tr>
+          </thead>
+          <tbody style="color: var(--color-text-muted); font-size: 0.9rem;">
+            <tr style="border-bottom: 1px solid var(--color-border);">
+              <td style="padding: 0.5rem 0;">Where blocking happens</td>
+              <td style="padding: 0.5rem 0;">Kernel (XDP)</td>
+              <td style="padding: 0.5rem 0;">Userspace / iptables/nftables</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--color-border);">
+              <td style="padding: 0.5rem 0;">Performance</td>
+              <td style="padding: 0.5rem 0;">Very high (early drop)</td>
+              <td style="padding: 0.5rem 0;">Good, more CPU per packet</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--color-border);">
+              <td style="padding: 0.5rem 0;">Dynamic rules</td>
+              <td style="padding: 0.5rem 0;">Yes (via daemon)</td>
+              <td style="padding: 0.5rem 0;">Yes (fail2ban) / static (UFW)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Same goal—block bad IPs and protect services. HoneyBan focuses on maximum throughput and kernel-level control.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p class="footer-copy">&copy; HoneyBan · Open source</p>
+      <div class="footer-links">
+        <a href="why.html">Why HoneyBan</a>
+        <span>·</span>
+        <a href="docs.html">Documentation</a>
+        <span>·</span>
+        <a href="https://github.com/AzizbekGolden/honeyban" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

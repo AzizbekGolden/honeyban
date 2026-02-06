@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Why HoneyBan - eBPF/XDP firewall, 10x faster than fail2ban and UFW. Kernel-level blocking.">
+  <title>Why HoneyBan - HoneyBan</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo"><img src="assets/logo.png" alt="HoneyBan"></a>
+      <nav class="nav">
+        <a href="why.html" class="active">Why HoneyBan</a>
+        <a href="docs.html">Documentation</a>
+        <a href="index.html#about">About</a>
+        <a href="https://github.com/AzizbekGolden/honeyban" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="why page-content">
+      <div class="container">
+        <h1>Why HoneyBan</h1>
+        <p class="section-lead">HoneyBan is an alternative to fail2ban and UFW. It uses eBPF and XDP to block bad traffic deep inside the kernel—so it's faster and more efficient.</p>
+        <div class="features-grid">
+          <article class="feature-card">
+            <h3>eBPF + XDP</h3>
+            <p>Packet filtering runs in the kernel with eBPF and XDP (eXpress Data Path). No userspace round-trips for every packet.</p>
+          </article>
+          <article class="feature-card">
+            <h3>~10× faster</h3>
+            <p>Kernel-level blocking means less overhead than traditional tools. More packets per second, lower CPU.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Kernel-level</h3>
+            <p>Blocks before packets hit the full network stack. Same idea as fail2ban/UFW, but deeper and faster.</p>
+          </article>
+        </div>
+        <div class="comparison-block">
+          <h3>Comparison: UFW vs fail2ban vs HoneyBan</h3>
+          <p class="comparison-intro">Same goal — block attackers and bad IPs. All three tools enforce firewall rules; HoneyBan does it at kernel level with eBPF/XDP for higher speed and lower CPU.</p>
+          <div class="comparison-table-wrap">
+            <table class="comparison-table comparison-table-three">
+              <thead>
+                <tr>
+                  <th>Criteria</th>
+                  <th>UFW</th>
+                  <th>fail2ban</th>
+                  <th>HoneyBan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Where blocking happens</td>
+                  <td>Userspace → iptables/nftables</td>
+                  <td>Userspace → parses logs, then iptables</td>
+                  <td><strong>Kernel (XDP, driver level)</strong></td>
+                </tr>
+                <tr>
+                  <td>Blocking speed</td>
+                  <td>After packet crosses stack</td>
+                  <td>After logs + rule update</td>
+                  <td><strong>~10× faster</strong> — drop at NIC</td>
+                </tr>
+                <tr>
+                  <td>CPU overhead</td>
+                  <td>Medium — netfilter per packet</td>
+                  <td>Higher — log parsing + rule changes</td>
+                  <td>Lower — early drop, less work</td>
+                </tr>
+                <tr>
+                  <td>Packet path</td>
+                  <td>NIC → stack → netfilter → drop</td>
+                  <td>NIC → stack → app → logs → iptables</td>
+                  <td>NIC → XDP → drop (short path)</td>
+                </tr>
+                <tr>
+                  <td>Rule type</td>
+                  <td>Static (admin-defined)</td>
+                  <td>Dynamic (from log patterns)</td>
+                  <td>Dynamic (daemon + block list)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <h2 class="algorithm-heading">How each tool works</h2>
+        <div class="algorithm-cards">
+          <article class="algorithm-card">
+            <h3>UFW</h3>
+            <p><strong>Algorithm:</strong> Front-end for iptables/nftables. You define rules (allow/deny by port, IP, interface). Rules are static; the kernel applies them in the netfilter stack after the packet has been processed by the network stack.</p>
+            <p>Packets follow the full path: NIC → kernel stack → netfilter hooks → accept/drop. No automatic reaction to log events; you add/remove rules manually or via scripts.</p>
+          </article>
+          <article class="algorithm-card">
+            <h3>fail2ban</h3>
+            <p><strong>Algorithm:</strong> Monitors log files (e.g. SSH, Apache) for patterns (e.g. failed logins). When a pattern matches, it runs an action (usually add an iptables/nftables rule to block that IP). So blocking is reactive and happens in userspace after log parsing.</p>
+            <p>Packet path for blocked IPs: packet still enters the stack and is then dropped by iptables. fail2ban does not see packets directly; it only reacts to what applications write to logs.</p>
+          </article>
+          <article class="algorithm-card">
+            <h3>HoneyBan</h3>
+            <p><strong>Algorithm:</strong> Uses eBPF programs attached at the XDP hook (earliest point in the kernel for packet processing). A block list (IPs/CIDRs) is maintained; the XDP program checks each packet’s source IP against this list and drops matching packets before they enter the rest of the stack.</p>
+            <p>Packet path: NIC → driver → XDP program → drop (or pass). No userspace round-trip per packet; the block list is updated by a daemon and reflected into the eBPF map used by the XDP program.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p class="footer-copy">&copy; HoneyBan · Open source</p>
+      <div class="footer-links">
+        <a href="why.html">Why HoneyBan</a>
+        <span>·</span>
+        <a href="docs.html">Documentation</a>
+        <span>·</span>
+        <a href="https://github.com/AzizbekGolden/honeyban" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

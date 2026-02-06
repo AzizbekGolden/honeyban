@@ -1,0 +1,30 @@
+[Unit]
+Description=HoneyBan daemon (XDP/eBPF firewall)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/honeyban/honeyban.env
+Environment=HONEYBAN_BPF_OBJ_PATH=/usr/local/lib/honeyban/honeyban_xdp.bpf.o
+Environment=HONEYBAN_IFACE=eth0
+ExecStart=/usr/local/bin/honeyban-daemon ${HONEYBAN_IFACE}
+Restart=always
+RestartSec=5
+TimeoutStopSec=10
+
+User=root
+Group=root
+NoNewPrivileges=false
+
+# Limits (required for BPF)
+LimitMEMLOCK=infinity
+LimitNOFILE=65535
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=honeyban
+
+[Install]
+WantedBy=multi-user.target

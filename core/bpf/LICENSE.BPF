@@ -1,0 +1,4 @@
+The eBPF/XDP program in this directory uses a GPL-compatible license string ("Dual BSD/GPL")
+to allow use of kernel helpers.
+
+All other code in this repository is MIT-licensed unless stated otherwise.
